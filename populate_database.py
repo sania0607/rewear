@@ -8,9 +8,11 @@ import os
 from datetime import datetime
 from werkzeug.security import generate_password_hash
 
-# Set up the database URL for local SQLite
-os.environ['DATABASE_URL'] = 'sqlite:///rewear.db'
-os.environ['SESSION_SECRET'] = 'dev-secret-key-change-in-production'
+
+# Only set defaults if not already set (so Render stays untouched)
+os.environ.setdefault('DATABASE_URL', 'sqlite:///rewear.db')
+os.environ.setdefault('SESSION_SECRET', 'dev-secret-key-change-in-production')
+
 
 from app import app, db
 from models import User, Item, ItemImage, NGO, Donation, Badge, UserBadge, CarbonFootprint
