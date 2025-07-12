@@ -5,7 +5,10 @@ Can be used instead of Gunicorn for development
 """
 
 import os
+from dotenv import load_dotenv  # 👈 1. Import dotenv
+load_dotenv() 
 from app import app
+import populate_database
 
 if __name__ == '__main__':
     # Set default environment variables for development
