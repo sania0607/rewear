@@ -1,0 +1,354 @@
+{% extends "base.html" %}
+
+{% block title %}NGOs - ReWear{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <div>
+            <h1>🏛️ Partner NGOs</h1>
+            <p>Connect with organizations focused on sustainable fashion and textile recycling</p>
+        </div>
+        <a href="{{ url_for('my_donations') }}" class="btn btn-outline">
+            <i class="fas fa-heart"></i> My Donations
+        </a>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-section">
+        <form method="GET" class="filters-form">
+            <div class="filter-group">
+                {{ form.city.label(class="filter-label") }}
+                {{ form.city(class="filter-input", value=request.args.get('city', '')) }}
+            </div>
+            
+            <div class="filter-group">
+                {{ form.focus_area.label(class="filter-label") }}
+                {{ form.focus_area(class="filter-select", value=request.args.get('focus_area', '')) }}
+            </div>
+            
+            <div class="filter-group">
+                <label class="checkbox-label">
+                    {{ form.pickup_available(checked=request.args.get('pickup_available')) }}
+                    <span class="checkmark"></span>
+                    Pickup Available
+                </label>
+            </div>
+            
+            <div class="filter-group">
+                <label class="checkbox-label">
+                    {{ form.verified_only(checked=request.args.get('verified_only')) }}
+                    <span class="checkmark"></span>
+                    Verified Only
+                </label>
+            </div>
+            
+            <div class="filter-actions">
+                {{ form.submit(class="btn btn-primary") }}
+                <a href="{{ url_for('ngos') }}" class="btn btn-outline">Clear</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- NGOs Grid -->
+    {% if ngos %}
+        <div class="ngos-grid">
+            {% for ngo in ngos %}
+                <div class="ngo-card">
+                    <div class="ngo-header">
+                        <div class="ngo-title">
+                            <h3>{{ ngo.name }}</h3>
+                            {% if ngo.verified %}
+                                <span class="verified-badge">
+                                    <i class="fas fa-check-circle"></i> Verified
+                                </span>
+                            {% endif %}
+                        </div>
+                        
+                        {% if ngo.city %}
+                            <div class="ngo-location">
+                                <i class="fas fa-map-marker-alt"></i>
+                                {{ ngo.city }}{% if ngo.state %}, {{ ngo.state }}{% endif %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="ngo-description">
+                        <p>{{ ngo.description[:150] }}{% if ngo.description|length > 150 %}...{% endif %}</p>
+                    </div>
+
+                    {% if ngo.focus_areas %}
+                        <div class="focus-areas">
+                            {% for area in ngo.get_focus_areas_list()[:3] %}
+                                <span class="focus-tag">{{ area.title() }}</span>
+                            {% endfor %}
+                            {% if ngo.get_focus_areas_list()|length > 3 %}
+                                <span class="focus-tag more">+{{ ngo.get_focus_areas_list()|length - 3 }}</span>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+
+                    <div class="ngo-features">
+                        {% if ngo.accepts_donations %}
+                            <div class="feature">
+                                <i class="fas fa-hand-holding-heart text-green"></i>
+                                <span>Accepting Donations</span>
+                            </div>
+                        {% endif %}
+                        
+                        {% if ngo.pickup_available %}
+                            <div class="feature">
+                                <i class="fas fa-truck text-blue"></i>
+                                <span>Pickup Available</span>
+                            </div>
+                        {% endif %}
+                        
+                        {% if ngo.drop_off_location %}
+                            <div class="feature">
+                                <i class="fas fa-map-pin text-purple"></i>
+                                <span>Drop-off Location</span>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="ngo-actions">
+                        <a href="{{ url_for('ngo_detail', ngo_id=ngo.id) }}" class="btn btn-outline btn-sm">
+                            <i class="fas fa-info-circle"></i> Learn More
+                        </a>
+                        {% if ngo.accepts_donations %}
+                            <a href="{{ url_for('donate_to_ngo', ngo_id=ngo.id) }}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-heart"></i> Donate Items
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <i class="fas fa-building"></i>
+            <h3>No NGOs found</h3>
+            <p>Try adjusting your search filters or check back later for new partner organizations.</p>
+            <a href="{{ url_for('ngos') }}" class="btn btn-primary">View All NGOs</a>
+        </div>
+    {% endif %}
+</div>
+
+<style>
+.container {
+    background: transparent !important;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.page-header h1 {
+    color: var(--text-primary) !important;
+    font-size: 2.5rem;
+    font-weight: 700;
+}
+
+.page-header p {
+    color: var(--text-secondary) !important;
+    font-size: 1.1rem;
+}
+
+.filters-section {
+    background: rgba(255, 255, 255, 0.08) !important;
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.filters-form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    align-items: end;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.filter-label {
+    color: var(--text-primary) !important;
+    font-size: 0.95rem;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.filter-input, .filter-select {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid rgba(255, 255, 255, 0.25) !important;
+    border-radius: 8px;
+    padding: 0.75rem;
+    color: var(--text-primary) !important;
+    font-size: 0.95rem;
+}
+
+.filter-input:focus, .filter-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(139, 69, 19, 0.2);
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-primary) !important;
+    font-size: 0.95rem;
+    cursor: pointer;
+    margin-top: 1.5rem;
+    font-weight: 500;
+}
+
+.filter-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+}
+
+.ngos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 1.5rem;
+}
+
+.ngo-card {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.ngo-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--primary-color) !important;
+    background: rgba(255, 255, 255, 0.12) !important;
+    box-shadow: 0 8px 24px rgba(0, 212, 255, 0.2);
+}
+
+.ngo-header {
+    margin-bottom: 1rem;
+}
+
+.ngo-title {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.ngo-title h3 {
+    margin: 0;
+    color: var(--text-primary) !important;
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
+.verified-badge {
+    background: rgba(76, 175, 80, 0.2);
+    color: #4caf50;
+    padding: 0.25rem 0.5rem;
+    border-radius: 15px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border: 1px solid #4caf50;
+}
+
+.ngo-location {
+    color: var(--text-secondary) !important;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+.ngo-description {
+    margin-bottom: 1rem;
+    color: var(--text-secondary) !important;
+    line-height: 1.6;
+    font-size: 0.95rem;
+}
+
+.focus-areas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.focus-tag {
+    background: rgba(139, 69, 19, 0.2);
+    color: var(--primary-color);
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    border: 1px solid rgba(139, 69, 19, 0.3);
+}
+
+.focus-tag.more {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-secondary);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.ngo-features {
+    margin-bottom: 1.5rem;
+}
+
+.feature {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.text-green { color: #4caf50; }
+.text-blue { color: #2196f3; }
+.text-purple { color: #9c27b0; }
+
+.ngo-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.btn-sm {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+    .page-header {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .filters-form {
+        grid-template-columns: 1fr;
+    }
+    
+    .ngos-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .ngo-actions {
+        flex-direction: column;
+    }
+}
+</style>
+{% endblock %}

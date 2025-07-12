@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}Profile - ReWear{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <div class="profile-header">
+        <div class="profile-info">
+            <div class="profile-avatar">
+                <i class="fas fa-user"></i>
+            </div>
+            <div class="profile-details">
+                <h1>{{ current_user.username }}</h1>
+                <p>{{ current_user.email }}</p>
+                <p>Member since {{ current_user.created_at.strftime('%B %Y') }}</p>
+            </div>
+        </div>
+
+        <div class="profile-stats">
+            <div class="stat-card">
+                <div class="stat-number">{{ current_user.points }}</div>
+                <div class="stat-label">Points</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ total_items }}</div>
+                <div class="stat-label">Items Listed</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ approved_items }}</div>
+                <div class="stat-label">Approved</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ swapped_items }}</div>
+                <div class="stat-label">Swapped</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="profile-content">
+        <div class="profile-section">
+            <div class="profile-actions">
+                    <a href="{{ url_for('add_item') }}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Add New Item
+                    </a>
+                    <a href="{{ url_for('shipping_address') }}" class="btn btn-secondary">
+                        <i class="fas fa-map-marker-alt"></i> Shipping Address
+                    </a>
+                </div>
+            <h2>Transaction History</h2>
+
+            {% if transactions %}
+                <div class="transactions-list">
+                    {% for transaction in transactions %}
+                        <div class="transaction-item">
+                            <div class="transaction-icon">
+                                {% if transaction.type == 'earned' %}
+                                    <i class="fas fa-plus-circle text-green"></i>
+                                {% elif transaction.type == 'spent' %}
+                                    <i class="fas fa-minus-circle text-red"></i>
+                                {% else %}
+                                    <i class="fas fa-gift text-blue"></i>
+                                {% endif %}
+                            </div>
+                            <div class="transaction-info">
+                                <div class="transaction-description">{{ transaction.description }}</div>
+                                <div class="transaction-date">{{ transaction.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+                            </div>
+                            <div class="transaction-amount">
+                                <span class="amount {% if transaction.amount > 0 %}positive{% else %}negative{% endif %}">
+                                    {% if transaction.amount > 0 %}+{% endif %}{{ transaction.amount }}
+                                </span>
+                                <span class="currency">pts</span>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-history"></i>
+                    <h3>No transactions yet</h3>
+                    <p>Your transaction history will appear here</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

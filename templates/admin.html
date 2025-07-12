@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Panel - ReWear{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <div class="admin-header">
+        <h1>Admin Panel</h1>
+        <p>Manage ReWear community content and users</p>
+    </div>
+    
+    <div class="admin-grid">
+        <!-- Pending Items -->
+        <div class="admin-section">
+            <h2>Pending Items ({{ pending_items|length }})</h2>
+            
+            {% if pending_items %}
+                <div class="admin-items">
+                    {% for item in pending_items %}
+                        <div class="admin-item">
+                            <div class="item-image">
+                                {% if item.images %}
+                                    <img src="{{ url_for('static', filename='images/' + item.images[0].filename) }}" 
+                                         alt="{{ item.title }}">
+                                {% else %}
+                                    <div class="placeholder-image">
+                                        <i class="fas fa-tshirt"></i>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="item-info">
+                                <h3>{{ item.title }}</h3>
+                                <p><strong>Owner:</strong> {{ item.owner.username }}</p>
+                                <p><strong>Category:</strong> {{ item.category.title() }}</p>
+                                <p><strong>Size:</strong> {{ item.size }}</p>
+                                <p><strong>Condition:</strong> {{ item.condition.title() }}</p>
+                                <p><strong>Points:</strong> {{ item.points_value }}</p>
+                                <p class="item-description">{{ item.description[:100] }}...</p>
+                                <small>{{ item.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                            </div>
+                            <div class="item-actions">
+                                <a href="{{ url_for('admin_action', item_id=item.id, action='approve') }}" 
+                                   class="btn btn-success btn-sm">Approve</a>
+                                <a href="{{ url_for('admin_action', item_id=item.id, action='reject') }}" 
+                                   class="btn btn-danger btn-sm">Reject</a>
+                                <a href="{{ url_for('item_detail', item_id=item.id) }}" 
+                                   class="btn btn-outline btn-sm">View</a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-check-circle"></i>
+                    <h3>No pending items</h3>
+                    <p>All items have been reviewed</p>
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Users -->
+        <div class="admin-section">
+            <h2>Users ({{ users|length }})</h2>
+            
+            <div class="admin-users">
+                {% for user in users %}
+                    <div class="admin-user">
+                        <div class="user-info">
+                            <h3>{{ user.username }}</h3>
+                            <p>{{ user.email }}</p>
+                            <p><strong>Points:</strong> {{ user.points }}</p>
+                            <p><strong>Items:</strong> {{ user.items|length }}</p>
+                            <p><strong>Joined:</strong> {{ user.created_at.strftime('%Y-%m-%d') }}</p>
+                            {% if user.is_admin %}
+                                <span class="admin-badge">Admin</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Recent Swaps -->
+        <div class="admin-section">
+            <h2>Recent Swaps</h2>
+            
+            {% if recent_swaps %}
+                <div class="admin-swaps">
+                    {% for swap in recent_swaps %}
+                        <div class="admin-swap">
+                            <div class="swap-info">
+                                <h3>{{ swap.item.title }}</h3>
+                                <p><strong>From:</strong> {{ swap.sender.username }}</p>
+                                <p><strong>To:</strong> {{ swap.receiver.username }}</p>
+                                <p><strong>Status:</strong> {{ swap.status.title() }}</p>
+                                <small>{{ swap.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                            </div>
+                            <div class="swap-status swap-status-{{ swap.status }}">
+                                {{ swap.status.title() }}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-exchange-alt"></i>
+                    <h3>No recent swaps</h3>
+                    <p>Swap activity will appear here</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

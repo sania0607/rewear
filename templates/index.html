@@ -1,0 +1,250 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero">
+    <div id="particles-js"></div>
+    <div class="hero-content">
+        <div class="hero-text">
+            <h1 class="hero-title">Swap Style. Save Earth.</h1>
+            <p class="hero-subtitle">Join the sustainable fashion revolution. Exchange clothes, earn points, and reduce waste.</p>
+            <div class="hero-buttons">
+                <a href="{{ url_for('browse') }}" class="btn btn-primary btn-lg">Start Swapping</a>
+                <a href="{{ url_for('add_item') }}" class="btn btn-secondary btn-lg">List an Item</a>
+            </div>
+        </div>
+        <div class="hero-stats">
+            <div class="stat-card">
+                <div class="stat-number">{{ featured_items|length }}</div>
+                <div class="stat-label">Items Available</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">1.2K</div>
+                <div class="stat-label">Happy Users</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">3.5K</div>
+                <div class="stat-label">Items Swapped</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Items Section -->
+<section class="featured-items">
+    <div class="container">
+        <div class="section-header">
+            <h2>Featured Items</h2>
+            <p>Discover the latest additions to our sustainable fashion community</p>
+        </div>
+        
+        {% if featured_items %}
+            <div class="items-grid">
+                {% for item in featured_items %}
+                    <div class="item-card">
+                        <div class="item-image">
+                            {% if item.images %}
+                                <img src="{{ url_for('static', filename='images/' + item.images[0].filename) }}" 
+                                     alt="{{ item.title }}">
+                            {% else %}
+                                <div class="placeholder-image">
+                                    <i class="fas fa-tshirt"></i>
+                                </div>
+                            {% endif %}
+                            <div class="item-overlay">
+                                <a href="{{ url_for('item_detail', item_id=item.id) }}" class="btn btn-primary">View Details</a>
+                            </div>
+                        </div>
+                        <div class="item-info">
+                            <h3>{{ item.title }}</h3>
+                            <div class="item-meta">
+                                <span class="item-category">{{ item.category.title() }}</span>
+                                <span class="item-size">Size {{ item.size }}</span>
+                            </div>
+                            <div class="item-footer">
+                                <div class="item-points">
+                                    <i class="fas fa-coins"></i>
+                                    {{ item.points_value }} pts
+                                </div>
+                                <div class="item-condition {{ item.condition }}">
+                                    {{ item.condition.title() }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            
+            <div class="section-cta">
+                <a href="{{ url_for('browse') }}" class="btn btn-outline">Browse All Items</a>
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-tshirt"></i>
+                <h3>No items yet</h3>
+                <p>Be the first to add an item to our community!</p>
+                <a href="{{ url_for('add_item') }}" class="btn btn-primary">Add First Item</a>
+            </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- How It Works Section -->
+<section class="how-it-works">
+    <div class="container">
+        <div class="section-header">
+            <h2>How It Works</h2>
+            <p>Three simple steps to start your sustainable fashion journey</p>
+        </div>
+        
+        <div class="steps-grid">
+            <div class="step-card">
+                <div class="step-icon">
+                    <i class="fas fa-plus-circle"></i>
+                </div>
+                <h3>List Your Items</h3>
+                <p>Upload photos and details of clothes you no longer wear</p>
+            </div>
+            
+            <div class="step-card">
+                <div class="step-icon">
+                    <i class="fas fa-exchange-alt"></i>
+                </div>
+                <h3>Swap or Earn</h3>
+                <p>Exchange directly with others or earn points for your items</p>
+            </div>
+            
+            <div class="step-card">
+                <div class="step-icon">
+                    <i class="fas fa-shopping-bag"></i>
+                </div>
+                <h3>Get New Style</h3>
+                <p>Use points to get items you love from the community</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+    <div class="container">
+        <div class="cta-content">
+            <h2>Ready to Join the Revolution?</h2>
+            <p>Start your sustainable fashion journey today</p>
+            <div class="cta-buttons">
+                {% if not current_user.is_authenticated %}
+                    <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg">Sign Up Now</a>
+                    <a href="{{ url_for('login') }}" class="btn btn-outline btn-lg">Login</a>
+                {% else %}
+                    <a href="{{ url_for('add_item') }}" class="btn btn-primary btn-lg">Add Your First Item</a>
+                    <a href="{{ url_for('browse') }}" class="btn btn-outline btn-lg">Browse Items</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+// Initialize clothing-themed particles
+particlesJS('particles-js', {
+    particles: {
+        number: { value: 60, density: { enable: true, value_area: 800 } },
+        color: { 
+            value: ['#404040', '#606060', '#505050', '#555555', '#454545']
+        },
+        shape: { 
+            type: ['circle', 'triangle', 'polygon'],
+            polygon: { nb_sides: 6 }
+        },
+        opacity: { 
+            value: 0.3, 
+            random: true,
+            anim: { enable: true, speed: 1, opacity_min: 0.05, sync: false }
+        },
+        size: { 
+            value: 4, 
+            random: true,
+            anim: { enable: true, speed: 2, size_min: 0.5, sync: false }
+        },
+        line_linked: {
+            enable: true,
+            distance: 120,
+            color: '#404040',
+            opacity: 0.2,
+            width: 1
+        },
+        move: {
+            enable: true,
+            speed: 3,
+            direction: 'none',
+            random: true,
+            straight: false,
+            out_mode: 'out',
+            bounce: false,
+            attract: { enable: true, rotateX: 600, rotateY: 1200 }
+        }
+    },
+    interactivity: {
+        detect_on: 'canvas',
+        events: {
+            onhover: { enable: true, mode: 'bubble' },
+            onclick: { enable: true, mode: 'repulse' },
+            resize: true
+        },
+        modes: {
+            bubble: { distance: 100, size: 8, duration: 2, opacity: 0.8, speed: 3 },
+            repulse: { distance: 150, duration: 0.4 }
+        }
+    },
+    retina_detect: true
+});
+
+// Add floating clothing icons
+function addClothingIcons() {
+    const clothingIcons = ['👕', '👗', '👖', '👚', '🧥', '👠', '👜', '🧢'];
+    const hero = document.querySelector('.hero');
+    
+    clothingIcons.forEach((icon, index) => {
+        const iconElement = document.createElement('div');
+        iconElement.className = 'floating-icon';
+        iconElement.textContent = icon;
+        iconElement.style.cssText = `
+            position: absolute;
+            font-size: 1.5rem;
+            opacity: 0.2;
+            pointer-events: none;
+            animation: float ${8 + index}s ease-in-out infinite;
+            animation-delay: ${index * 0.5}s;
+            left: ${Math.random() * 80 + 10}%;
+            top: ${Math.random() * 80 + 10}%;
+            z-index: 1;
+        `;
+        hero.appendChild(iconElement);
+    });
+}
+
+// Add CSS for floating animation
+const floatingStyles = document.createElement('style');
+floatingStyles.textContent = `
+    @keyframes float {
+        0%, 100% { transform: translateY(0px) rotate(0deg); }
+        25% { transform: translateY(-20px) rotate(5deg); }
+        50% { transform: translateY(-10px) rotate(-3deg); }
+        75% { transform: translateY(-25px) rotate(3deg); }
+    }
+    
+    .floating-icon {
+        transition: all 0.3s ease;
+    }
+    
+    .floating-icon:hover {
+        transform: scale(1.2);
+        opacity: 1;
+    }
+`;
+document.head.appendChild(floatingStyles);
+
+// Initialize floating icons after page load
+setTimeout(addClothingIcons, 1000);
+</script>
+{% endblock %}

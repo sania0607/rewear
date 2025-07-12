@@ -1,0 +1,110 @@
+
+{% extends "base.html" %}
+
+{% block title %}Update Shipping - ReWear{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <div class="profile-header">
+        <div>
+            <h1>Update Shipping Information</h1>
+            <p>{{ swap.item.title }} - Swap #{{ swap.id }}</p>
+        </div>
+        <a href="{{ url_for('swap_details', swap_id=swap.id) }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Swap Details
+        </a>
+    </div>
+
+    <div class="form-container">
+        <form method="POST" class="form">
+            {{ form.hidden_tag() }}
+            
+            <div class="form-group">
+                {{ form.shipping_method.label(class="form-label") }}
+                {{ form.shipping_method(class="form-control", id="shipping_method") }}
+                <small class="form-text">
+                    Choose how you'll deliver this item:
+                    <br><strong>Mail:</strong> Ship via postal service
+                    <br><strong>Local Pickup:</strong> Buyer picks up from your location
+                    <br><strong>Public Meetup:</strong> Meet at a public location
+                </small>
+            </div>
+
+            <div id="mail-fields" style="display: none;">
+                <div class="form-group">
+                    {{ form.carrier.label(class="form-label") }}
+                    {{ form.carrier(class="form-control") }}
+                </div>
+                
+                <div class="form-group">
+                    {{ form.tracking_number.label(class="form-label") }}
+                    {{ form.tracking_number(class="form-control", placeholder="e.g., 1Z123456789") }}
+                </div>
+                
+                <div class="form-group">
+                    {{ form.estimated_delivery.label(class="form-label") }}
+                    {{ form.estimated_delivery(class="form-control", type="date") }}
+                </div>
+            </div>
+            
+            <div id="meetup-fields" style="display: none;">
+                <div class="form-group">
+                    {{ form.meetup_location.label(class="form-label") }}
+                    {{ form.meetup_location(class="form-control", placeholder="e.g., Starbucks on Main Street") }}
+                </div>
+                
+                <div class="form-group">
+                    {{ form.pickup_time.label(class="form-label") }}
+                    {{ form.pickup_time(class="form-control", placeholder="e.g., Saturday 2 PM") }}
+                </div>
+            </div>
+
+            <div class="form-group">
+                {{ form.notes.label(class="form-label") }}
+                {{ form.notes(class="form-control", rows="3") }}
+                <small class="form-text">
+                    Additional information for the buyer (pickup instructions, meeting details, etc.)
+                </small>
+            </div>
+
+            <div class="form-actions">
+                {{ form.submit(class="btn btn-primary") }}
+            </div>
+        </form>
+
+        <div class="shipping-tips">
+            <h3>Shipping Tips</h3>
+            <ul>
+                <li><strong>For Mail Shipping:</strong> Package securely and get tracking</li>
+                <li><strong>For Local Pickup:</strong> Provide clear pickup instructions</li>
+                <li><strong>For Meetups:</strong> Choose safe, public locations</li>
+                <li><strong>Communication:</strong> Stay in touch with the buyer throughout</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<script>
+// Show/hide fields based on shipping method
+document.getElementById('shipping_method').addEventListener('change', function() {
+    const mailFields = document.getElementById('mail-fields');
+    const meetupFields = document.getElementById('meetup-fields');
+    
+    // Hide all fields first
+    mailFields.style.display = 'none';
+    meetupFields.style.display = 'none';
+    
+    // Show relevant fields based on selection
+    if (this.value === 'mail') {
+        mailFields.style.display = 'block';
+    } else if (this.value === 'meetup' || this.value === 'pickup') {
+        meetupFields.style.display = 'block';
+    }
+});
+
+// Trigger on page load if there's a pre-selected value
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('shipping_method').dispatchEvent(new Event('change'));
+});
+</script>
+{% endblock %}

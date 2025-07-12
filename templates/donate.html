@@ -1,0 +1,408 @@
+{% extends "base.html" %}
+
+{% block title %}Donate to {{ ngo.name }} - ReWear{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="donation-header">
+        <div class="back-navigation">
+            <a href="{{ url_for('ngo_detail', ngo_id=ngo.id) }}" class="btn btn-outline">
+                <i class="fas fa-arrow-left"></i> Back to {{ ngo.name }}
+            </a>
+        </div>
+        
+        <div class="donation-title">
+            <h1>💝 Donate Items to {{ ngo.name }}</h1>
+            <p>Help make a difference by donating your unused clothing items</p>
+        </div>
+    </div>
+
+    <div class="donation-grid">
+        <!-- Donation Form -->
+        <div class="form-section">
+            <div class="form-container">
+                <h2>Donation Details</h2>
+                
+                <form method="POST" class="donation-form">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="form-group">
+                        {{ form.items_description.label(class="form-label") }}
+                        {{ form.items_description(class="form-control", rows="4") }}
+                        {% for error in form.items_description.errors %}
+                            <span class="form-error">{{ error }}</span>
+                        {% endfor %}
+                        <small class="form-help">
+                            Be specific about types, sizes, conditions, and quantities. 
+                            This helps the NGO prepare for your donation.
+                        </small>
+                    </div>
+                    
+                    <div class="form-group">
+                        {{ form.estimated_value.label(class="form-label") }}
+                        {{ form.estimated_value(class="form-control") }}
+                        {% for error in form.estimated_value.errors %}
+                            <span class="form-error">{{ error }}</span>
+                        {% endfor %}
+                        <small class="form-help">
+                            Optional: Estimate the point value if these were listed for swap. 
+                            You'll earn bonus points based on this value.
+                        </small>
+                    </div>
+                    
+                    <div class="form-group">
+                        {{ form.message.label(class="form-label") }}
+                        {{ form.message(class="form-control", rows="3") }}
+                        {% for error in form.message.errors %}
+                            <span class="form-error">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    
+                    <h3 class="section-title">Pickup Information</h3>
+                    
+                    <div class="form-group">
+                        {{ form.pickup_address.label(class="form-label") }}
+                        {{ form.pickup_address(class="form-control", rows="3") }}
+                        {% for error in form.pickup_address.errors %}
+                            <span class="form-error">{{ error }}</span>
+                        {% endfor %}
+                        <small class="form-help">
+                            Provide the complete address where the NGO can pick up the items.
+                        </small>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            {{ form.contact_phone.label(class="form-label") }}
+                            {{ form.contact_phone(class="form-control") }}
+                            {% for error in form.contact_phone.errors %}
+                                <span class="form-error">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="form-group">
+                            {{ form.preferred_contact_method.label(class="form-label") }}
+                            {{ form.preferred_contact_method(class="form-control") }}
+                            {% for error in form.preferred_contact_method.errors %}
+                                <span class="form-error">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        {{ form.submit(class="btn btn-primary btn-large") }}
+                        <a href="{{ url_for('ngo_detail', ngo_id=ngo.id) }}" class="btn btn-outline">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- NGO Info Sidebar -->
+        <div class="info-sidebar">
+            <div class="ngo-summary">
+                <h3>{{ ngo.name }}</h3>
+                {% if ngo.verified %}
+                    <span class="verified-badge">
+                        <i class="fas fa-check-circle"></i> Verified Partner
+                    </span>
+                {% endif %}
+                
+                <p class="ngo-description">{{ ngo.description[:200] }}{% if ngo.description|length > 200 %}...{% endif %}</p>
+                
+                {% if ngo.focus_areas %}
+                    <div class="focus-areas">
+                        <strong>Focus Areas:</strong>
+                        <div class="tags">
+                            {% for area in ngo.get_focus_areas_list()[:3] %}
+                                <span class="tag">{{ area.title() }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="pickup-info">
+                <h4>🚚 Pickup & Drop-off</h4>
+                <div class="info-list">
+                    {% if ngo.pickup_available %}
+                        <div class="info-item">
+                            <i class="fas fa-truck text-green"></i>
+                            <span>Pickup service available</span>
+                        </div>
+                    {% endif %}
+                    
+                    {% if ngo.drop_off_location %}
+                        <div class="info-item">
+                            <i class="fas fa-map-pin text-blue"></i>
+                            <span>Drop-off location available</span>
+                        </div>
+                    {% endif %}
+                    
+                    {% if ngo.operating_hours %}
+                        <div class="info-item">
+                            <i class="fas fa-clock text-purple"></i>
+                            <span>{{ ngo.operating_hours }}</span>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="donation-benefits">
+                <h4>💰 Your Benefits</h4>
+                <ul>
+                    <li>Earn 20-50 bonus points for your donation</li>
+                    <li>Help reduce textile waste in the community</li>
+                    <li>Support sustainable fashion practices</li>
+                    <li>Make a positive social impact</li>
+                </ul>
+            </div>
+            
+            {% if ngo.email or ngo.phone %}
+                <div class="contact-info">
+                    <h4>📞 Need Help?</h4>
+                    {% if ngo.phone %}
+                        <div class="contact-item">
+                            <i class="fas fa-phone"></i>
+                            <a href="tel:{{ ngo.phone }}">{{ ngo.phone }}</a>
+                        </div>
+                    {% endif %}
+                    {% if ngo.email %}
+                        <div class="contact-item">
+                            <i class="fas fa-envelope"></i>
+                            <a href="mailto:{{ ngo.email }}">{{ ngo.email }}</a>
+                        </div>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.donation-header {
+    margin-bottom: 2rem;
+}
+
+.back-navigation {
+    margin-bottom: 1rem;
+}
+
+.donation-title h1 {
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.donation-title p {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+}
+
+.container {
+    background: transparent !important;
+}
+
+.donation-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+}
+
+.form-section {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border-radius: 12px;
+    padding: 0;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.form-container {
+    padding: 2rem;
+}
+
+.form-container h2 {
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+    font-size: 1.4rem;
+}
+
+.section-title {
+    color: var(--text-primary);
+    margin: 2rem 0 1rem 0;
+    font-size: 1.2rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.form-help {
+    display: block;
+    margin-top: 0.5rem;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.btn-large {
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.info-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.ngo-summary,
+.pickup-info,
+.donation-benefits,
+.contact-info {
+    background: rgba(255, 255, 255, 0.08) !important;
+    padding: 1.5rem;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.ngo-summary h3 {
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.verified-badge {
+    background: rgba(76, 175, 80, 0.2);
+    color: #4caf50;
+    padding: 0.25rem 0.75rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border: 1px solid #4caf50;
+    margin-bottom: 1rem;
+    display: inline-block;
+}
+
+.ngo-description {
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin-bottom: 1rem;
+}
+
+.focus-areas strong {
+    color: var(--text-primary);
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.tag {
+    background: rgba(139, 69, 19, 0.2);
+    color: var(--primary-color);
+    padding: 0.25rem 0.5rem;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    border: 1px solid rgba(139, 69, 19, 0.3);
+}
+
+.pickup-info h4,
+.donation-benefits h4,
+.contact-info h4 {
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+.info-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.text-green { color: #4caf50; }
+.text-blue { color: #2196f3; }
+.text-purple { color: #9c27b0; }
+
+.donation-benefits ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.donation-benefits li {
+    color: var(--text-secondary);
+    margin-bottom: 0.75rem;
+    position: relative;
+    padding-left: 1.5rem;
+}
+
+.donation-benefits li:before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    color: #4caf50;
+    font-weight: bold;
+}
+
+.contact-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-secondary);
+}
+
+.contact-item a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.contact-item a:hover {
+    color: var(--primary-color);
+}
+
+@media (max-width: 768px) {
+    .donation-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-container {
+        padding: 1.5rem;
+    }
+    
+    .btn-large {
+        width: 100%;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .form-actions .btn {
+        width: 100%;
+    }
+}
+</style>
+{% endblock %}

@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - ReWear{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <h1>Welcome back, {{ current_user.username }}!</h1>
+        <div class="dashboard-stats">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-coins"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-number">{{ current_user.points }}</div>
+                    <div class="stat-label">Points</div>
+                </div>
+            </div>
+            <div class="stat-card carbon-stat">
+                <div class="stat-icon">
+                    <i class="fas fa-leaf"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-number">{{ current_user.total_co2_saved|round(1) }}</div>
+                    <div class="stat-label">kg CO₂ Saved</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-tshirt"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-number">{{ user_items|length }}</div>
+                    <div class="stat-label">Items Listed</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-exchange-alt"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-number">{{ pending_swaps|length }}</div>
+                    <div class="stat-label">Pending Swaps</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Carbon Footprint Impact Section -->
+        <div class="carbon-impact-section">
+            <div class="impact-card">
+                <div class="impact-header">
+                    <h3>🌍 Your Environmental Impact</h3>
+                    <p class="impact-message">{{ sustainability_message }}</p>
+                </div>
+                <div class="impact-stats">
+                    <div class="impact-stat">
+                        <span class="impact-value">{{ current_user.total_items_swapped }}</span>
+                        <span class="impact-label">Items Swapped</span>
+                    </div>
+                    <div class="impact-stat">
+                        <span class="impact-value">{{ current_user.total_items_donated }}</span>
+                        <span class="impact-label">Items Donated</span>
+                    </div>
+                    <div class="impact-stat">
+                        <span class="impact-value">{{ current_user.total_weight_reused|round(1) }}</span>
+                        <span class="impact-label">kg Textiles Reused</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sustainability Badges -->
+            {% if user_badges %}
+            <div class="badges-section">
+                <h3>🏆 Your Sustainability Badges</h3>
+                <div class="badges-grid">
+                    {% for badge in user_badges %}
+                    <div class="badge-card" style="border-color: {{ badge.badge.color }}">
+                        <div class="badge-icon">{{ badge.badge.icon }}</div>
+                        <div class="badge-info">
+                            <h4>{{ badge.badge.name }}</h4>
+                            <p>{{ badge.badge.description }}</p>
+                            <small>Earned: {{ badge.earned_at.strftime('%Y-%m-%d') }}</small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="dashboard-grid">
+        <!-- Pending Swaps -->
+        {% if pending_swaps %}
+            <div class="dashboard-section">
+                <h2>Pending Swap Requests</h2>
+                <div class="swap-requests">
+                    {% for swap in pending_swaps %}
+                        <div class="swap-card">
+                            <div class="swap-info">
+                                <h3>{{ swap.item.title }}</h3>
+                                <p><strong>From:</strong> {{ swap.sender.username }}</p>
+                                {% if swap.message %}
+                                    <p><strong>Message:</strong> {{ swap.message }}</p>
+                                {% endif %}
+                                <small>{{ swap.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                            </div>
+                            <div class="swap-actions">
+                                <a href="{{ url_for('swap_details', swap_id=swap.id) }}" 
+                                   class="btn btn-info btn-sm">View Details</a>
+                                <a href="{{ url_for('swap_action', swap_id=swap.id, action='accept') }}" 
+                                   class="btn btn-success btn-sm">Accept</a>
+                                <a href="{{ url_for('swap_action', swap_id=swap.id, action='reject') }}" 
+                                   class="btn btn-danger btn-sm">Reject</a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Your Items -->
+        <div class="dashboard-section">
+            <div class="section-header">
+                <h2>Your Items</h2>
+                <div class="header-actions">
+                    <a href="{{ url_for('ngos') }}" class="btn btn-success">
+                        <i class="fas fa-heart"></i> Donate to NGOs
+                    </a>
+                    <a href="{{ url_for('delivery_tracking') }}" class="btn btn-secondary">
+                        <i class="fas fa-shipping-fast"></i> Track Deliveries
+                    </a>
+                    <a href="{{ url_for('add_item') }}" class="btn btn-primary">Add New Item</a>
+                </div>
+            </div>
+            
+            {% if user_items %}
+                <div class="items-grid">
+                    {% for item in user_items %}
+                        <div class="item-card">
+                            <div class="item-image">
+                                {% if item.images %}
+                                    <img src="{{ url_for('static', filename='images/' + item.images[0].filename) }}" 
+                                         alt="{{ item.title }}">
+                                {% else %}
+                                    <div class="placeholder-image">
+                                        <i class="fas fa-tshirt"></i>
+                                    </div>
+                                {% endif %}
+                                <div class="item-status item-status-{{ item.status }}">
+                                    {{ item.status.title() }}
+                                </div>
+                            </div>
+                            <div class="item-info">
+                                <h3>{{ item.title }}</h3>
+                                <div class="item-meta">
+                                    <span class="item-category">{{ item.category.title() }}</span>
+                                    <span class="item-size">Size {{ item.size }}</span>
+                                </div>
+                                <div class="item-footer">
+                                    <div class="item-points">
+                                        <i class="fas fa-coins"></i>
+                                        {{ item.points_value }} pts
+                                    </div>
+                                    <a href="{{ url_for('item_detail', item_id=item.id) }}" class="btn btn-sm btn-outline">View</a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-tshirt"></i>
+                    <h3>No items yet</h3>
+                    <p>Start by adding your first item to the community</p>
+                    <a href="{{ url_for('add_item') }}" class="btn btn-primary">Add Item</a>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="dashboard-section">
+            <h2>Recent Activity</h2>
+            
+            {% if recent_transactions %}
+                <div class="activity-list">
+                    {% for transaction in recent_transactions %}
+                        <div class="activity-item">
+                            <div class="activity-icon">
+                                {% if transaction.type == 'earned' %}
+                                    <i class="fas fa-plus-circle text-green"></i>
+                                {% elif transaction.type == 'spent' %}
+                                    <i class="fas fa-minus-circle text-red"></i>
+                                {% else %}
+                                    <i class="fas fa-gift text-blue"></i>
+                                {% endif %}
+                            </div>
+                            <div class="activity-info">
+                                <div class="activity-description">{{ transaction.description }}</div>
+                                <div class="activity-date">{{ transaction.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+                            </div>
+                            <div class="activity-amount">
+                                {% if transaction.amount > 0 %}+{% endif %}{{ transaction.amount }} pts
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-history"></i>
+                    <h3>No activity yet</h3>
+                    <p>Your recent transactions will appear here</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

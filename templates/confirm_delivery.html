@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+
+{% block title %}Confirm Delivery - ReWear{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <div class="profile-header">
+        <div>
+            <h1>📦 Confirm Item Delivery</h1>
+            <p>{{ swap.item.title }} - Swap #{{ swap.id }}</p>
+        </div>
+        <a href="{{ url_for('swap_details', swap_id=swap.id) }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Swap Details
+        </a>
+    </div>
+
+    <div class="delivery-confirmation-container">
+        <div class="item-summary">
+            <div class="item-image">
+                {% if swap.item.images %}
+                    <img src="{{ url_for('static', filename='images/' + swap.item.images[0].filename) }}" 
+                         alt="{{ swap.item.title }}">
+                {% else %}
+                    <div class="placeholder-image">
+                        <i class="fas fa-tshirt"></i>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="item-details">
+                <h3>{{ swap.item.title }}</h3>
+                <p><strong>From:</strong> {{ swap.receiver.username }}</p>
+                <p><strong>Size:</strong> {{ swap.item.size }}</p>
+                <p><strong>Points:</strong> {{ swap.item.points_value }} pts</p>
+                {% if swap.shipping_method == 'mail' and swap.tracking_number %}
+                    <p><strong>Tracking:</strong> {{ swap.tracking_number }}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <form method="POST" class="delivery-form">
+            {{ form.hidden_tag() }}
+            
+            <div class="form-section">
+                <h3>📋 Item Condition Assessment</h3>
+                <div class="form-group">
+                    {{ form.condition_on_arrival.label(class="form-label") }}
+                    {{ form.condition_on_arrival(class="form-control") }}
+                    <small class="form-help">
+                        How did the item arrive compared to its description?
+                        <br><strong>Poor condition may result in a partial refund.</strong>
+                    </small>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>⭐ Rate Your Experience</h3>
+                <div class="form-group">
+                    {{ form.rating.label(class="form-label") }}
+                    {{ form.rating(class="form-control") }}
+                    <small class="form-help">Rate the overall exchange experience</small>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>💬 Feedback (Optional)</h3>
+                <div class="form-group">
+                    {{ form.feedback.label(class="form-label") }}
+                    {{ form.feedback(class="form-control", rows="4", placeholder="Share your experience with this exchange...") }}
+                    <small class="form-help">This feedback helps improve our community</small>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                {{ form.submit(class="btn btn-primary btn-large") }}
+                <a href="{{ url_for('swap_details', swap_id=swap.id) }}" class="btn btn-outline">Cancel</a>
+            </div>
+        </form>
+
+        <div class="delivery-info">
+            <h3>🛡️ Protection Policy</h3>
+            <ul>
+                <li><strong>Item Not as Described:</strong> If condition is "Poor", you'll receive a 50% point refund</li>
+                <li><strong>Missing Items:</strong> Contact support for full refund processing</li>
+                <li><strong>Quality Issues:</strong> Your feedback helps maintain community standards</li>
+                <li><strong>Communication:</strong> Reach out to the sender for minor issues first</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<style>
+.delivery-confirmation-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.item-summary {
+    display: flex;
+    gap: 1.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 1.5rem;
+    border-radius: 10px;
+    margin-bottom: 2rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.item-summary .item-image {
+    width: 120px;
+    height: 120px;
+    border-radius: 8px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.item-summary .item-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.item-summary .placeholder-image {
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+    font-size: 2rem;
+}
+
+.delivery-form {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 2rem;
+    border-radius: 10px;
+    margin-bottom: 2rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.form-section {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.form-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.form-section h3 {
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+.form-help {
+    display: block;
+    margin-top: 0.5rem;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.btn-large {
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.delivery-info {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 1.5rem;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.delivery-info h3 {
+    color: var(--accent-color);
+    margin-bottom: 1rem;
+}
+
+.delivery-info ul {
+    list-style: none;
+    padding: 0;
+}
+
+.delivery-info li {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.delivery-info li:last-child {
+    border-bottom: none;
+}
+
+@media (max-width: 768px) {
+    .item-summary {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .item-summary .item-image {
+        width: 150px;
+        height: 150px;
+        margin: 0 auto;
+    }
+}
+</style>
+{% endblock %}

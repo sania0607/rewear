@@ -1,0 +1,409 @@
+{% extends "base.html" %}
+
+{% block title %}Delivery Tracking - ReWear{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <div class="profile-header">
+        <div>
+            <h1>🚚 Delivery Tracking</h1>
+            <p>Track your shipped and received items</p>
+        </div>
+        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+
+    <div class="tracking-container">
+        <div class="tracking-section">
+            <h2>📤 Items You're Sending</h2>
+            {% if received_swaps %}
+                <div class="tracking-grid">
+                    {% for swap in received_swaps %}
+                        <div class="tracking-card">
+                            <div class="tracking-header">
+                                <div class="item-info">
+                                    <h3>{{ swap.item.title }}</h3>
+                                    <p class="recipient">To: {{ swap.sender.username }}</p>
+                                </div>
+                                <div class="tracking-status status-{{ swap.status }}">
+                                    {{ swap.status.title() }}
+                                </div>
+                            </div>
+                            
+                            <div class="shipping-details">
+                                <div class="detail-row">
+                                    <span class="label">Method:</span>
+                                    <span class="value">{{ swap.shipping_method.replace('_', ' ').title() if swap.shipping_method else 'Not set' }}</span>
+                                </div>
+                                
+                                {% if swap.tracking_number %}
+                                <div class="detail-row">
+                                    <span class="label">Tracking:</span>
+                                    <span class="value">{{ swap.tracking_number }}</span>
+                                </div>
+                                {% endif %}
+                                
+                                {% if swap.carrier %}
+                                <div class="detail-row">
+                                    <span class="label">Carrier:</span>
+                                    <span class="value">{{ swap.carrier.upper() }}</span>
+                                </div>
+                                {% endif %}
+                                
+                                {% if swap.estimated_delivery %}
+                                <div class="detail-row">
+                                    <span class="label">Est. Delivery:</span>
+                                    <span class="value">{{ swap.estimated_delivery.strftime('%Y-%m-%d') }}</span>
+                                </div>
+                                {% endif %}
+                                
+                                {% if swap.meetup_location %}
+                                <div class="detail-row">
+                                    <span class="label">Location:</span>
+                                    <span class="value">{{ swap.meetup_location }}</span>
+                                </div>
+                                {% endif %}
+                                
+                                {% if swap.pickup_time %}
+                                <div class="detail-row">
+                                    <span class="label">Time:</span>
+                                    <span class="value">{{ swap.pickup_time }}</span>
+                                </div>
+                                {% endif %}
+                                
+                                <div class="detail-row">
+                                    <span class="label">Shipped:</span>
+                                    <span class="value">{{ swap.shipped_at.strftime('%Y-%m-%d %H:%M') if swap.shipped_at else 'Not shipped' }}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="tracking-actions">
+                                <a href="{{ url_for('swap_details', swap_id=swap.id) }}" class="btn btn-outline">
+                                    View Details
+                                </a>
+                                {% if swap.status == 'shipped' and swap.tracking_number and swap.carrier %}
+                                    <a href="#" class="btn btn-primary track-package" 
+                                       data-carrier="{{ swap.carrier }}" 
+                                       data-tracking="{{ swap.tracking_number }}">
+                                        Track Package
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-shipping-fast"></i>
+                    <h3>No shipped items</h3>
+                    <p>Items you send will appear here once shipped</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="tracking-section">
+            <h2>📥 Items Coming to You</h2>
+            {% if sent_swaps %}
+                <div class="tracking-grid">
+                    {% for swap in sent_swaps %}
+                        <div class="tracking-card">
+                            <div class="tracking-header">
+                                <div class="item-info">
+                                    <h3>{{ swap.item.title }}</h3>
+                                    <p class="sender">From: {{ swap.receiver.username }}</p>
+                                </div>
+                                <div class="tracking-status status-{{ swap.status }}">
+                                    {{ swap.status.title() }}
+                                </div>
+                            </div>
+                            
+                            <div class="shipping-details">
+                                <div class="detail-row">
+                                    <span class="label">Method:</span>
+                                    <span class="value">{{ swap.shipping_method.replace('_', ' ').title() if swap.shipping_method else 'Not set' }}</span>
+                                </div>
+                                
+                                {% if swap.tracking_number %}
+                                <div class="detail-row">
+                                    <span class="label">Tracking:</span>
+                                    <span class="value">{{ swap.tracking_number }}</span>
+                                </div>
+                                {% endif %}
+                                
+                                {% if swap.carrier %}
+                                <div class="detail-row">
+                                    <span class="label">Carrier:</span>
+                                    <span class="value">{{ swap.carrier.upper() }}</span>
+                                </div>
+                                {% endif %}
+                                
+                                {% if swap.estimated_delivery %}
+                                <div class="detail-row">
+                                    <span class="label">Est. Delivery:</span>
+                                    <span class="value">{{ swap.estimated_delivery.strftime('%Y-%m-%d') }}</span>
+                                </div>
+                                {% endif %}
+                                
+                                {% if swap.meetup_location %}
+                                <div class="detail-row">
+                                    <span class="label">Location:</span>
+                                    <span class="value">{{ swap.meetup_location }}</span>
+                                </div>
+                                {% endif %}
+                                
+                                {% if swap.pickup_time %}
+                                <div class="detail-row">
+                                    <span class="label">Time:</span>
+                                    <span class="value">{{ swap.pickup_time }}</span>
+                                </div>
+                                {% endif %}
+                                
+                                <div class="detail-row">
+                                    <span class="label">Shipped:</span>
+                                    <span class="value">{{ swap.shipped_at.strftime('%Y-%m-%d %H:%M') if swap.shipped_at else 'Not shipped' }}</span>
+                                </div>
+                                
+                                {% if swap.status == 'delivered' %}
+                                <div class="detail-row">
+                                    <span class="label">Delivered:</span>
+                                    <span class="value">{{ swap.completed_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                                </div>
+                                
+                                {% if swap.exchange_rating %}
+                                <div class="detail-row">
+                                    <span class="label">Your Rating:</span>
+                                    <span class="value">
+                                        {% for i in range(1, 6) %}
+                                            {% if i <= swap.exchange_rating %}
+                                                <i class="fas fa-star star-filled"></i>
+                                            {% else %}
+                                                <i class="far fa-star star-empty"></i>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </span>
+                                </div>
+                                {% endif %}
+                                {% endif %}
+                            </div>
+                            
+                            <div class="tracking-actions">
+                                <a href="{{ url_for('swap_details', swap_id=swap.id) }}" class="btn btn-outline">
+                                    View Details
+                                </a>
+                                {% if swap.status == 'shipped' %}
+                                    <a href="{{ url_for('confirm_delivery', swap_id=swap.id) }}" class="btn btn-primary">
+                                        Confirm Delivery
+                                    </a>
+                                {% endif %}
+                                {% if swap.status == 'shipped' and swap.tracking_number and swap.carrier %}
+                                    <a href="#" class="btn btn-secondary track-package" 
+                                       data-carrier="{{ swap.carrier }}" 
+                                       data-tracking="{{ swap.tracking_number }}">
+                                        Track Package
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-box-open"></i>
+                    <h3>No incoming items</h3>
+                    <p>Items being shipped to you will appear here</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.tracking-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.tracking-section {
+    margin-bottom: 3rem;
+}
+
+.tracking-section h2 {
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+}
+
+.tracking-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 1.5rem;
+}
+
+.tracking-card {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    padding: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: transform 0.2s ease;
+}
+
+.tracking-card:hover {
+    transform: translateY(-2px);
+}
+
+.tracking-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.item-info h3 {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 1.1rem;
+}
+
+.recipient, .sender {
+    color: var(--text-secondary);
+    margin: 0.25rem 0 0 0;
+    font-size: 0.9rem;
+}
+
+.tracking-status {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-shipped {
+    background: rgba(255, 193, 7, 0.2);
+    color: #ffc107;
+    border: 1px solid #ffc107;
+}
+
+.status-delivered {
+    background: rgba(76, 175, 80, 0.2);
+    color: #4caf50;
+    border: 1px solid #4caf50;
+}
+
+.shipping-details {
+    margin-bottom: 1.5rem;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.detail-row:last-child {
+    border-bottom: none;
+}
+
+.detail-row .label {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.detail-row .value {
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    text-align: right;
+    flex-shrink: 0;
+    max-width: 60%;
+    word-break: break-word;
+}
+
+.star-filled {
+    color: #ffc107;
+}
+
+.star-empty {
+    color: var(--text-secondary);
+}
+
+.tracking-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.tracking-actions .btn {
+    flex: 1;
+    min-width: auto;
+    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+}
+
+@media (max-width: 768px) {
+    .tracking-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .tracking-header {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .tracking-status {
+        align-self: flex-start;
+    }
+    
+    .detail-row .value {
+        max-width: 50%;
+    }
+    
+    .tracking-actions {
+        flex-direction: column;
+    }
+    
+    .tracking-actions .btn {
+        flex: none;
+    }
+}
+</style>
+
+<script>
+// Handle package tracking links
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.track-package').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const carrier = this.dataset.carrier;
+            const tracking = this.dataset.tracking;
+            
+            let trackingUrl = '';
+            switch(carrier) {
+                case 'usps':
+                    trackingUrl = `https://tools.usps.com/go/TrackConfirmAction?qtc_tLabels1=${tracking}`;
+                    break;
+                case 'fedex':
+                    trackingUrl = `https://www.fedex.com/apps/fedextrack/?tracknumbers=${tracking}`;
+                    break;
+                case 'ups':
+                    trackingUrl = `https://www.ups.com/track?tracknum=${tracking}`;
+                    break;
+                case 'dhl':
+                    trackingUrl = `https://www.dhl.com/us-en/home/tracking/tracking-express.html?submit=1&tracking-id=${tracking}`;
+                    break;
+                default:
+                    alert(`Tracking number: ${tracking}\nPlease visit your carrier's website to track this package.`);
+                    return;
+            }
+            
+            window.open(trackingUrl, '_blank');
+        });
+    });
+});
+</script>
+{% endblock %}

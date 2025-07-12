@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+
+{% block title %}Browse Items - ReWear{% endblock %}
+
+{% block content %}
+<div class="browse-container">
+    <div class="browse-header">
+        <h1>Browse Items</h1>
+        <p>Discover sustainable fashion from our community</p>
+    </div>
+    
+    <div class="browse-filters">
+        <form method="GET" class="filters-form">
+            <!-- First Row: Text inputs and dropdowns -->
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label class="filter-label">Search</label>
+                    <input type="text" name="search" placeholder="Search items..." 
+                           value="{{ current_search or '' }}" class="filter-input">
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">Category</label>
+                    <select name="category" class="filter-select">
+                        <option value="">All Categories</option>
+                        <option value="tops" {% if current_category == 'tops' %}selected{% endif %}>Tops</option>
+                        <option value="bottoms" {% if current_category == 'bottoms' %}selected{% endif %}>Bottoms</option>
+                        <option value="dresses" {% if current_category == 'dresses' %}selected{% endif %}>Dresses</option>
+                        <option value="outerwear" {% if current_category == 'outerwear' %}selected{% endif %}>Outerwear</option>
+                        <option value="shoes" {% if current_category == 'shoes' %}selected{% endif %}>Shoes</option>
+                        <option value="accessories" {% if current_category == 'accessories' %}selected{% endif %}>Accessories</option>
+                        <option value="bags" {% if current_category == 'bags' %}selected{% endif %}>Bags</option>
+                        <option value="jewelry" {% if current_category == 'jewelry' %}selected{% endif %}>Jewelry</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">Size</label>
+                    <select name="size" class="filter-select">
+                        <option value="">All Sizes</option>
+                        <option value="XS" {% if current_size == 'XS' %}selected{% endif %}>XS</option>
+                        <option value="S" {% if current_size == 'S' %}selected{% endif %}>S</option>
+                        <option value="M" {% if current_size == 'M' %}selected{% endif %}>M</option>
+                        <option value="L" {% if current_size == 'L' %}selected{% endif %}>L</option>
+                        <option value="XL" {% if current_size == 'XL' %}selected{% endif %}>XL</option>
+                        <option value="XXL" {% if current_size == 'XXL' %}selected{% endif %}>XXL</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">Condition</label>
+                    <select name="condition" class="filter-select">
+                        <option value="">All Conditions</option>
+                        <option value="new" {% if current_condition == 'new' %}selected{% endif %}>New</option>
+                        <option value="excellent" {% if current_condition == 'excellent' %}selected{% endif %}>Excellent</option>
+                        <option value="good" {% if current_condition == 'good' %}selected{% endif %}>Good</option>
+                        <option value="fair" {% if current_condition == 'fair' %}selected{% endif %}>Fair</option>
+                    </select>
+                </div>
+                
+                {% if current_user.is_authenticated and current_user.city %}
+                <div class="filter-group">
+                    <label class="filter-label">Location</label>
+                    <select name="location_filter" class="filter-select">
+                        <option value="">All Locations</option>
+                        <option value="city" {% if current_location_filter == 'city' %}selected{% endif %}>
+                            Within {{ current_user.city }}
+                        </option>
+                        {% if current_user.pincode %}
+                        <option value="pincode" {% if current_location_filter == 'pincode' %}selected{% endif %}>
+                            Within {{ current_user.pincode }}
+                        </option>
+                        {% endif %}
+                    </select>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Second Row: Checkboxes and buttons -->
+            <div class="filter-row filter-row-secondary">
+                <div class="checkbox-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="new_only" value="1" {% if request.args.get('new_only') %}checked{% endif %}>
+                        <span class="checkmark"></span>
+                        New Items Only
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="local_only" value="1" {% if request.args.get('local_only') %}checked{% endif %}>
+                        <span class="checkmark"></span>
+                        Local Pickup Available
+                    </label>
+                </div>
+                
+                <div class="button-group">
+                    <button type="submit" class="btn btn-primary filter-btn">Filter</button>
+                    <a href="{{ url_for('browse') }}" class="btn btn-secondary filter-btn">Clear</a>
+                </div>
+            </div>
+        </form>
+    </div>
+    
+    <div class="browse-results">
+        {% if items %}
+            <div class="results-header">
+                <p>{{ items|length }} items found</p>
+            </div>
+            
+            <div class="items-grid">
+                {% for item in items %}
+                    <div class="item-card">
+                        <div class="item-image">
+                            {% if item.images %}
+                                <img src="{{ url_for('static', filename='images/' + item.images[0].filename) }}" 
+                                     alt="{{ item.title }}">
+                            {% else %}
+                                <div class="placeholder-image">
+                                    <i class="fas fa-tshirt"></i>
+                                </div>
+                            {% endif %}
+                            <div class="item-overlay">
+                                <a href="{{ url_for('item_detail', item_id=item.id) }}" class="btn btn-primary">View Details</a>
+                            </div>
+                        </div>
+                        <div class="item-info">
+                            <h3>{{ item.title }}</h3>
+                            <div class="item-meta">
+                                <span class="item-category">{{ item.category.title() }}</span>
+                                <span class="item-size">Size {{ item.size }}</span>
+                            </div>
+                            {% if item.city %}
+                            <div class="item-location">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>{{ item.city }}{% if item.state %}, {{ item.state }}{% endif %}</span>
+                            </div>
+                            {% endif %}
+                            <div class="item-footer">
+                                <div class="item-points">
+                                    <i class="fas fa-coins"></i>
+                                    {{ item.points_value }} pts
+                                </div>
+                                <div class="item-condition {{ item.condition }}">
+                                    {{ item.condition.title() }}
+                                </div>
+                            </div>
+                            {% if item.tags %}
+                                <div class="item-tags">
+                                    {% for tag in item.get_tags_list()[:3] %}
+                                        <span class="tag">{{ tag }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                {% if current_location_filter %}
+                    <i class="fas fa-map-marker-alt"></i>
+                    <h3>No clothes near you</h3>
+                    <p>No items found in your area. Try widening your search!</p>
+                    <div class="empty-actions">
+                        <a href="{{ url_for('browse') }}" class="btn btn-primary">View All Items</a>
+                        {% if current_location_filter == 'pincode' %}
+                        <a href="{{ url_for('browse', location_filter='city') }}" class="btn btn-outline">
+                            Expand to {{ current_user.city }}
+                        </a>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <i class="fas fa-search"></i>
+                    <h3>No items found</h3>
+                    <p>Try adjusting your search criteria or browse all items</p>
+                    <a href="{{ url_for('browse') }}" class="btn btn-primary">Browse All Items</a>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

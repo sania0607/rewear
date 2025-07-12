@@ -1,0 +1,466 @@
+{% extends "base.html" %}
+
+{% block title %}{{ ngo.name }} - ReWear{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="ngo-detail-header">
+        <div class="back-navigation">
+            <a href="{{ url_for('ngos') }}" class="btn btn-outline">
+                <i class="fas fa-arrow-left"></i> Back to NGOs
+            </a>
+        </div>
+        
+        <div class="ngo-title-section">
+            <div class="ngo-name">
+                <h1>{{ ngo.name }}</h1>
+                {% if ngo.verified %}
+                    <span class="verified-badge">
+                        <i class="fas fa-check-circle"></i> Verified Partner
+                    </span>
+                {% endif %}
+            </div>
+            
+            {% if ngo.city %}
+                <div class="ngo-location">
+                    <i class="fas fa-map-marker-alt"></i>
+                    {{ ngo.city }}{% if ngo.state %}, {{ ngo.state }}{% endif %}{% if ngo.country %}, {{ ngo.country }}{% endif %}
+                </div>
+            {% endif %}
+        </div>
+        
+        {% if ngo.accepts_donations %}
+            <div class="header-actions">
+                <a href="{{ url_for('donate_to_ngo', ngo_id=ngo.id) }}" class="btn btn-primary btn-large">
+                    <i class="fas fa-heart"></i> Donate Items
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="ngo-detail-grid">
+        <!-- Main Info -->
+        <div class="main-content">
+            <div class="section">
+                <h2>About {{ ngo.name }}</h2>
+                <p class="description">{{ ngo.description }}</p>
+            </div>
+
+            {% if ngo.focus_areas %}
+                <div class="section">
+                    <h2>Focus Areas</h2>
+                    <div class="focus-areas">
+                        {% for area in ngo.get_focus_areas_list() %}
+                            <span class="focus-tag">{{ area.title() }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+
+            {% if ngo.drop_off_location or ngo.address %}
+                <div class="section">
+                    <h2>Location & Drop-off</h2>
+                    {% if ngo.drop_off_location %}
+                        <div class="info-item">
+                            <i class="fas fa-map-pin"></i>
+                            <div>
+                                <strong>Drop-off Location:</strong>
+                                <p>{{ ngo.drop_off_location }}</p>
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    {% if ngo.address %}
+                        <div class="info-item">
+                            <i class="fas fa-building"></i>
+                            <div>
+                                <strong>Address:</strong>
+                                <p>{{ ngo.address }}</p>
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    {% if ngo.operating_hours %}
+                        <div class="info-item">
+                            <i class="fas fa-clock"></i>
+                            <div>
+                                <strong>Operating Hours:</strong>
+                                <p>{{ ngo.operating_hours }}</p>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <!-- Donation Status -->
+            <div class="sidebar-section donation-status">
+                {% if ngo.accepts_donations %}
+                    <div class="status-badge accepting">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Currently Accepting Donations</span>
+                    </div>
+                {% else %}
+                    <div class="status-badge not-accepting">
+                        <i class="fas fa-pause-circle"></i>
+                        <span>Not Currently Accepting Donations</span>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Services -->
+            <div class="sidebar-section">
+                <h3>Services</h3>
+                <div class="services-list">
+                    {% if ngo.pickup_available %}
+                        <div class="service-item">
+                            <i class="fas fa-truck text-green"></i>
+                            <span>Pickup Available</span>
+                        </div>
+                    {% endif %}
+                    
+                    {% if ngo.drop_off_location %}
+                        <div class="service-item">
+                            <i class="fas fa-map-pin text-blue"></i>
+                            <span>Drop-off Location</span>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="service-item">
+                        <i class="fas fa-recycle text-green"></i>
+                        <span>Textile Recycling</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Information -->
+            <div class="sidebar-section">
+                <h3>Contact Information</h3>
+                <div class="contact-list">
+                    {% if ngo.email %}
+                        <div class="contact-item">
+                            <i class="fas fa-envelope"></i>
+                            <a href="mailto:{{ ngo.email }}">{{ ngo.email }}</a>
+                        </div>
+                    {% endif %}
+                    
+                    {% if ngo.phone %}
+                        <div class="contact-item">
+                            <i class="fas fa-phone"></i>
+                            <a href="tel:{{ ngo.phone }}">{{ ngo.phone }}</a>
+                        </div>
+                    {% endif %}
+                    
+                    {% if ngo.website %}
+                        <div class="contact-item">
+                            <i class="fas fa-globe"></i>
+                            <a href="{{ ngo.website }}" target="_blank">{{ ngo.website }}</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Social Media -->
+            {% if ngo.instagram or ngo.facebook or ngo.twitter %}
+                <div class="sidebar-section">
+                    <h3>Follow Us</h3>
+                    <div class="social-links">
+                        {% if ngo.instagram %}
+                            <a href="https://instagram.com/{{ ngo.instagram }}" target="_blank" class="social-link instagram">
+                                <i class="fab fa-instagram"></i>
+                            </a>
+                        {% endif %}
+                        
+                        {% if ngo.facebook %}
+                            <a href="https://facebook.com/{{ ngo.facebook }}" target="_blank" class="social-link facebook">
+                                <i class="fab fa-facebook"></i>
+                            </a>
+                        {% endif %}
+                        
+                        {% if ngo.twitter %}
+                            <a href="https://twitter.com/{{ ngo.twitter }}" target="_blank" class="social-link twitter">
+                                <i class="fab fa-twitter"></i>
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Donation CTA -->
+            {% if ngo.accepts_donations %}
+                <div class="sidebar-section cta-section">
+                    <h3>Ready to Donate?</h3>
+                    <p>Help {{ ngo.name }} make a difference by donating your unused clothing items.</p>
+                    <a href="{{ url_for('donate_to_ngo', ngo_id=ngo.id) }}" class="btn btn-primary btn-full">
+                        <i class="fas fa-heart"></i> Start Donation
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.container {
+    background: transparent !important;
+}
+
+.ngo-detail-header {
+    margin-bottom: 2rem;
+}
+
+.back-navigation {
+    margin-bottom: 1rem;
+}
+
+.ngo-title-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.ngo-name {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.ngo-name h1 {
+    margin: 0;
+    color: var(--text-primary) !important;
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.verified-badge {
+    background: rgba(76, 175, 80, 0.2);
+    color: #4caf50;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border: 1px solid #4caf50;
+}
+
+.ngo-location {
+    color: var(--text-secondary) !important;
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    font-weight: 500;
+}
+
+.header-actions .btn-large {
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.ngo-detail-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+}
+
+.section {
+    background: rgba(255, 255, 255, 0.08) !important;
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.section h2 {
+    color: var(--primary-color) !important;
+    margin-bottom: 1rem;
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
+.description {
+    color: var(--text-secondary) !important;
+    line-height: 1.6;
+    font-size: 1rem;
+}
+
+.focus-areas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.focus-tag {
+    background: rgba(139, 69, 19, 0.2);
+    color: var(--primary-color);
+    padding: 0.5rem 1rem;
+    border-radius: 15px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    border: 1px solid rgba(139, 69, 19, 0.3);
+}
+
+.info-item {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    align-items: flex-start;
+}
+
+.info-item i {
+    color: var(--primary-color);
+    font-size: 1.2rem;
+    margin-top: 0.2rem;
+    flex-shrink: 0;
+}
+
+.info-item strong {
+    color: var(--text-primary);
+}
+
+.info-item p {
+    margin: 0.25rem 0 0 0;
+    color: var(--text-secondary);
+}
+
+.sidebar-section {
+    background: rgba(255, 255, 255, 0.08) !important;
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.sidebar-section h3 {
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+.donation-status {
+    text-align: center;
+}
+
+.status-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+.status-badge.accepting {
+    background: rgba(76, 175, 80, 0.2);
+    color: #4caf50;
+    border: 1px solid #4caf50;
+}
+
+.status-badge.not-accepting {
+    background: rgba(255, 152, 0, 0.2);
+    color: #ff9800;
+    border: 1px solid #ff9800;
+}
+
+.services-list, .contact-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.service-item, .contact-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.contact-item a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.contact-item a:hover {
+    color: var(--primary-color);
+}
+
+.social-links {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+.social-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    color: white;
+    text-decoration: none;
+    transition: transform 0.2s ease;
+}
+
+.social-link:hover {
+    transform: scale(1.1);
+}
+
+.social-link.instagram { background: linear-gradient(45deg, #833ab4, #fd1d1d, #fcb045); }
+.social-link.facebook { background: #1877f2; }
+.social-link.twitter { background: #1da1f2; }
+
+.cta-section {
+    text-align: center;
+}
+
+.cta-section p {
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+    line-height: 1.4;
+}
+
+.btn-full {
+    width: 100%;
+    justify-content: center;
+}
+
+.text-green { color: #4caf50; }
+.text-blue { color: #2196f3; }
+
+@media (max-width: 768px) {
+    .ngo-detail-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .ngo-title-section {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .ngo-name {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .ngo-name h1 {
+        font-size: 1.5rem;
+    }
+    
+    .header-actions {
+        width: 100%;
+    }
+    
+    .header-actions .btn {
+        width: 100%;
+    }
+}
+</style>
+{% endblock %}

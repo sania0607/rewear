@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Register - ReWear{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <h1>Join ReWear</h1>
+            <p>Create your account and start swapping</p>
+        </div>
+        
+        <form method="POST" class="auth-form">
+            {{ form.hidden_tag() }}
+            
+            <div class="form-group">
+                {{ form.username.label(class="form-label") }}
+                {{ form.username(class="form-input") }}
+                {% for error in form.username.errors %}
+                    <span class="form-error">{{ error }}</span>
+                {% endfor %}
+            </div>
+            
+            <div class="form-group">
+                {{ form.email.label(class="form-label") }}
+                {{ form.email(class="form-input") }}
+                {% for error in form.email.errors %}
+                    <span class="form-error">{{ error }}</span>
+                {% endfor %}
+            </div>
+            
+            <div class="form-group">
+                {{ form.password.label(class="form-label") }}
+                {{ form.password(class="form-input") }}
+                {% for error in form.password.errors %}
+                    <span class="form-error">{{ error }}</span>
+                {% endfor %}
+            </div>
+            
+            <div class="form-group">
+                {{ form.password2.label(class="form-label") }}
+                {{ form.password2(class="form-input") }}
+                {% for error in form.password2.errors %}
+                    <span class="form-error">{{ error }}</span>
+                {% endfor %}
+            </div>
+            
+            <div class="location-section">
+                <h3>📍 Location Information</h3>
+                <p class="location-help">This helps you find clothes near you and enables local swaps</p>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        {{ form.city.label(class="form-label") }}
+                        {{ form.city(class="form-input", placeholder="e.g., New York") }}
+                        {% for error in form.city.errors %}
+                            <span class="form-error">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="form-group">
+                        {{ form.state.label(class="form-label") }}
+                        {{ form.state(class="form-input", placeholder="e.g., NY") }}
+                        {% for error in form.state.errors %}
+                            <span class="form-error">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    {{ form.pincode.label(class="form-label") }}
+                    {{ form.pincode(class="form-input", placeholder="e.g., 10001") }}
+                    {% for error in form.pincode.errors %}
+                        <span class="form-error">{{ error }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <div class="form-group">
+                {{ form.submit(class="btn btn-primary btn-full") }}
+            </div>
+        </form>
+        
+        <div class="auth-footer">
+            <p>Already have an account? <a href="{{ url_for('login') }}">Sign in</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

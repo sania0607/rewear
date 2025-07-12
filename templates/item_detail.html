@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block title %}{{ item.title }} - ReWear{% endblock %}
+
+{% block content %}
+<div class="item-detail-container">
+    <div class="item-detail-grid">
+        <div class="item-images">
+            {% if item.images %}
+                <div class="main-image">
+                    <img src="{{ url_for('static', filename='images/' + item.images[0].filename) }}" 
+                         alt="{{ item.title }}" id="mainImage">
+                </div>
+                {% if item.images|length > 1 %}
+                    <div class="image-thumbnails">
+                        {% for image in item.images %}
+                            <img src="{{ url_for('static', filename='images/' + image.filename) }}" 
+                                 alt="{{ item.title }}" 
+                                 class="thumbnail"
+                                 onclick="changeMainImage(this.src)">
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% else %}
+                <div class="placeholder-image">
+                    <i class="fas fa-tshirt"></i>
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="item-info">
+            <div class="item-header">
+                <h1>{{ item.title }}</h1>
+                <div class="item-owner">
+                    <i class="fas fa-user"></i>
+                    <span>{{ item.owner.username }}</span>
+                </div>
+            </div>
+            
+            <div class="item-meta">
+                <div class="meta-item">
+                    <span class="meta-label">Category:</span>
+                    <span class="meta-value">{{ item.category.title() }}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Size:</span>
+                    <span class="meta-value">{{ item.size }}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Condition:</span>
+                    <span class="meta-value condition-{{ item.condition }}">{{ item.condition.title() }}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Points:</span>
+                    <span class="meta-value points">
+                        <i class="fas fa-coins"></i>
+                        {{ item.points_value }} pts
+                    </span>
+                </div>
+            </div>
+            
+            {% if item.tags %}
+                <div class="item-tags">
+                    {% for tag in item.get_tags_list() %}
+                        <span class="tag">{{ tag }}</span>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            
+            <div class="item-description">
+                <h3>Description</h3>
+                <p>{{ item.description }}</p>
+            </div>
+            
+            {% if current_user.is_authenticated and current_user.id != item.user_id %}
+                <div class="item-actions">
+                    <form method="POST" action="{{ url_for('swap_request', item_id=item.id) }}" class="swap-form">
+                        {{ form.hidden_tag() }}
+                        <div class="form-group">
+                            {{ form.message.label(class="form-label") }}
+                            {{ form.message(class="form-input", placeholder="Optional message to the owner...") }}
+                        </div>
+                        <div class="action-buttons">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-exchange-alt"></i>
+                                Request Swap
+                            </button>
+                            <a href="{{ url_for('redeem_item', item_id=item.id) }}" class="btn btn-secondary">
+                                <i class="fas fa-coins"></i>
+                                Redeem with Points
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            {% elif current_user.is_authenticated and current_user.id == item.user_id %}
+                <div class="owner-info">
+                    <p class="info-message">
+                        <i class="fas fa-info-circle"></i>
+                        This is your item. Status: <strong>{{ item.status.title() }}</strong>
+                    </p>
+                </div>
+            {% else %}
+                <div class="login-prompt">
+                    <p>
+                        <a href="{{ url_for('login') }}">Login</a> to swap or redeem this item
+                    </p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    {% if related_items %}
+        <div class="related-items">
+            <h2>Related Items</h2>
+            <div class="items-grid">
+                {% for related_item in related_items %}
+                    <div class="item-card">
+                        <div class="item-image">
+                            {% if related_item.images %}
+                                <img src="{{ url_for('static', filename='images/' + related_item.images[0].filename) }}" 
+                                     alt="{{ related_item.title }}">
+                            {% else %}
+                                <div class="placeholder-image">
+                                    <i class="fas fa-tshirt"></i>
+                                </div>
+                            {% endif %}
+                            <div class="item-overlay">
+                                <a href="{{ url_for('item_detail', item_id=related_item.id) }}" class="btn btn-primary">View Details</a>
+                            </div>
+                        </div>
+                        <div class="item-info">
+                            <h3>{{ related_item.title }}</h3>
+                            <div class="item-meta">
+                                <span class="item-category">{{ related_item.category.title() }}</span>
+                                <span class="item-size">Size {{ related_item.size }}</span>
+                            </div>
+                            <div class="item-footer">
+                                <div class="item-points">
+                                    <i class="fas fa-coins"></i>
+                                    {{ related_item.points_value }} pts
+                                </div>
+                                <div class="item-condition {{ related_item.condition }}">
+                                    {{ related_item.condition.title() }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+function changeMainImage(src) {
+    document.getElementById('mainImage').src = src;
+}
+</script>
+{% endblock %}

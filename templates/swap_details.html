@@ -1,0 +1,325 @@
+
+{% extends "base.html" %}
+
+{% block title %}Swap Details - ReWear{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <div class="profile-header">
+        <div>
+            <h1>Swap Details</h1>
+            <p>Swap #{{ swap.id }} - {{ swap.item.title }}</p>
+        </div>
+        <div class="header-actions">
+            <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+            <a href="{{ url_for('delivery_tracking') }}" class="btn btn-outline">
+                <i class="fas fa-shipping-fast"></i> Track Deliveries
+            </a>
+        </div>
+    </div>
+
+    <div class="swap-details-grid">
+        <!-- Item Information -->
+        <div class="dashboard-section">
+            <h2>Item Information</h2>
+            <div class="item-info">
+                <img src="{{ url_for('static', filename='images/' + swap.item.images[0].filename) if swap.item.images else url_for('static', filename='images/placeholder.jpg') }}" 
+                     alt="{{ swap.item.title }}" class="item-image">
+                <div class="item-details">
+                    <h3>{{ swap.item.title }}</h3>
+                    <p><strong>Size:</strong> {{ swap.item.size }}</p>
+                    <p><strong>Category:</strong> {{ swap.item.category.title() }}</p>
+                    <p><strong>Condition:</strong> {{ swap.item.condition.title() }}</p>
+                    <p><strong>Points Value:</strong> {{ swap.item.points_value }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Swap Information -->
+        <div class="dashboard-section">
+            <h2>Swap Information</h2>
+            <div class="swap-info-details">
+                <p><strong>Status:</strong> 
+                    <span class="swap-status swap-status-{{ swap.status }}">{{ swap.status.title() }}</span>
+                </p>
+                <p><strong>Requested by:</strong> {{ swap.sender.username }}</p>
+                <p><strong>Item owner:</strong> {{ swap.receiver.username }}</p>
+                <p><strong>Request date:</strong> {{ swap.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                
+                {% if swap.message %}
+                    <div class="swap-message">
+                        <strong>Message:</strong>
+                        <p>{{ swap.message }}</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Shipping Information (if swap is accepted) -->
+        {% if swap.status in ['accepted', 'shipped', 'delivered'] %}
+            <div class="dashboard-section">
+                <h2>Shipping Information</h2>
+                
+                {% if swap.receiver_id == current_user.id and swap.status == 'accepted' %}
+                    <div class="shipping-action">
+                        <p>The swap has been accepted! Please set up shipping for this item.</p>
+                        <a href="{{ url_for('update_shipping', swap_id=swap.id) }}" class="btn btn-primary">
+                            <i class="fas fa-shipping-fast"></i> Set Up Shipping
+                        </a>
+                    </div>
+                {% endif %}
+
+                {% if swap.shipping_method %}
+                    <div class="shipping-details">
+                        <p><strong>Shipping Method:</strong> {{ swap.shipping_method.replace('_', ' ').title() }}</p>
+                        
+                        {% if swap.tracking_number %}
+                            <p><strong>Tracking Number:</strong> {{ swap.tracking_number }}</p>
+                        {% endif %}
+                        
+                        {% if swap.carrier %}
+                            <p><strong>Carrier:</strong> {{ swap.carrier.upper() }}</p>
+                        {% endif %}
+                        
+                        {% if swap.estimated_delivery %}
+                            <p><strong>Estimated Delivery:</strong> {{ swap.estimated_delivery.strftime('%Y-%m-%d') }}</p>
+                        {% endif %}
+                        
+                        {% if swap.meetup_location %}
+                            <p><strong>Meetup Location:</strong> {{ swap.meetup_location }}</p>
+                        {% endif %}
+                        
+                        {% if swap.pickup_time %}
+                            <p><strong>Pickup Time:</strong> {{ swap.pickup_time }}</p>
+                        {% endif %}
+                        
+                        {% if swap.shipped_at %}
+                            <p><strong>Shipped Date:</strong> {{ swap.shipped_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                        {% endif %}
+                        
+                        {% if swap.notes %}
+                            <div class="shipping-notes">
+                                <strong>Notes:</strong>
+                                <p>{{ swap.notes }}</p>
+                            </div>
+                        {% endif %}
+                        
+                        <!-- Quick Actions -->
+                        <div class="shipping-actions">
+                            {% if swap.status == 'shipped' and swap.sender_id == current_user.id %}
+                                <a href="{{ url_for('confirm_delivery', swap_id=swap.id) }}" class="btn btn-primary">
+                                    <i class="fas fa-check"></i> Confirm Delivery
+                                </a>
+                            {% endif %}
+                            
+                            {% if swap.tracking_number and swap.carrier %}
+                                <button class="btn btn-outline track-package" 
+                                        data-carrier="{{ swap.carrier }}" 
+                                        data-tracking="{{ swap.tracking_number }}">
+                                    <i class="fas fa-external-link-alt"></i> Track Package
+                                </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <!-- Delivery Feedback (if completed) -->
+            {% if swap.status == 'delivered' and swap.exchange_rating %}
+            <div class="dashboard-section">
+                <h2>Exchange Feedback</h2>
+                <div class="feedback-summary">
+                    <div class="rating-display">
+                        <span class="rating-label">Rating:</span>
+                        <div class="stars">
+                            {% for i in range(1, 6) %}
+                                {% if i <= swap.exchange_rating %}
+                                    <i class="fas fa-star star-filled"></i>
+                                {% else %}
+                                    <i class="far fa-star star-empty"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    {% if swap.condition_on_arrival %}
+                    <p><strong>Item Condition:</strong> {{ swap.condition_on_arrival.title() }}</p>
+                    {% endif %}
+                    
+                    {% if swap.receiver_feedback %}
+                    <div class="feedback-text">
+                        <strong>Feedback:</strong>
+                        <p>{{ swap.receiver_feedback }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    {% if swap.completed_at %}
+                    <p><strong>Completed:</strong> {{ swap.completed_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Contact Information -->
+            <div class="dashboard-section">
+                <h2>Contact Information</h2>
+                
+                {% if swap.sender_id == current_user.id %}
+                    <!-- Show receiver's shipping address to sender -->
+                    {% if swap.receiver.full_name %}
+                        <div class="shipping-address">
+                            <h3>Ship to:</h3>
+                            <p><strong>{{ swap.receiver.full_name }}</strong></p>
+                            <p>{{ swap.receiver.address_line1 }}</p>
+                            {% if swap.receiver.address_line2 %}
+                                <p>{{ swap.receiver.address_line2 }}</p>
+                            {% endif %}
+                            <p>{{ swap.receiver.city }}, {{ swap.receiver.state }} {{ swap.receiver.postal_code }}</p>
+                            <p>{{ swap.receiver.country }}</p>
+                            {% if swap.receiver.phone %}
+                                <p><strong>Phone:</strong> {{ swap.receiver.phone }}</p>
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <p class="text-warning">The item owner hasn't set up their shipping address yet.</p>
+                    {% endif %}
+                {% else %}
+                    <!-- Show sender's info to receiver -->
+                    <div class="contact-info">
+                        <p><strong>Requester:</strong> {{ swap.sender.username }}</p>
+                        <p><strong>Email:</strong> {{ swap.sender.email }}</p>
+                    </div>
+                    
+                    {% if not current_user.full_name %}
+                        <div class="address-warning">
+                            <p class="text-warning">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                You need to set up your shipping address before this item can be shipped.
+                            </p>
+                            <a href="{{ url_for('shipping_address') }}" class="btn btn-primary">
+                                <i class="fas fa-map-marker-alt"></i> Set Up Shipping Address
+                            </a>
+                        </div>
+                    {% endif %}
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.header-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.shipping-actions {
+    margin-top: 1rem;
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.shipping-actions .btn {
+    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+}
+
+.feedback-summary {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.rating-display {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.stars {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.star-filled {
+    color: #ffc107;
+}
+
+.star-empty {
+    color: var(--text-secondary);
+}
+
+.feedback-text {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.feedback-text p {
+    margin-top: 0.5rem;
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+@media (max-width: 768px) {
+    .header-actions {
+        flex-direction: column;
+        gap: 0.5rem;
+        width: 100%;
+    }
+    
+    .header-actions .btn {
+        width: 100%;
+        text-align: center;
+    }
+    
+    .shipping-actions {
+        flex-direction: column;
+    }
+    
+    .shipping-actions .btn {
+        width: 100%;
+    }
+}
+</style>
+
+<script>
+// Handle package tracking links
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.track-package').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const carrier = this.dataset.carrier;
+            const tracking = this.dataset.tracking;
+            
+            let trackingUrl = '';
+            switch(carrier) {
+                case 'usps':
+                    trackingUrl = `https://tools.usps.com/go/TrackConfirmAction?qtc_tLabels1=${tracking}`;
+                    break;
+                case 'fedex':
+                    trackingUrl = `https://www.fedex.com/apps/fedextrack/?tracknumbers=${tracking}`;
+                    break;
+                case 'ups':
+                    trackingUrl = `https://www.ups.com/track?tracknum=${tracking}`;
+                    break;
+                case 'dhl':
+                    trackingUrl = `https://www.dhl.com/us-en/home/tracking/tracking-express.html?submit=1&tracking-id=${tracking}`;
+                    break;
+                default:
+                    alert(`Tracking number: ${tracking}\nPlease visit your carrier's website to track this package.`);
+                    return;
+            }
+            
+            window.open(trackingUrl, '_blank');
+        });
+    });
+});
+</script>
+{% endblock %}
