@@ -53,11 +53,6 @@ For SQLite (default):
 export DATABASE_URL="sqlite:///rewear.db"
 ```
 
-## Admin Access
-
-Default admin credentials:
-- Username: admin
-- Password: admin123
 
 ## Technology Stack
 
